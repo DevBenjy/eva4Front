@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "../Sidebar";
 import Topbar from "../Topbar";
 import { Link, useNavigate } from "react-router-dom";
-import config from '../../helpers/config.json';
+import config from './../../helpers/config.json';
 
 const ClientsAdmin = () => {
     let navigate = useNavigate();
@@ -18,24 +18,25 @@ const ClientsAdmin = () => {
         fetch(config.apiURL+"clients/"+config.operatorId, requestOptions).then((response) => {
             return response.json();
         }).then((result) => {
+            // this.setState({ clientList: result.data.map((client) => { return client; }) });
             let clientList = result.data.map((client) => { return client; });
             let rowData;
             if(clientList.length === 0){
-                rowData = (<tr><td colSpan="4" className="text-center">No existen clientes</td></tr>);
+                rowData = (<tr><td colSpan="4" className="text-center">No existen productos</td></tr>);
             } else {
-                rowData = clientList.map(p => {
+                rowData = clientList.map(c => {
                     let button;
-                    if(p.active){
-                        button = <button className="btn btn-secondary" onClick={() => disable(p)}><i className="fas fa-eye-slash"></i> Deshabilitar</button>;
+                    if(c.active){
+                        button = <button className="btn btn-secondary" onClick={() => disable(c)}><i className="fas fa-eye-slash"></i> Deshabilitar</button>;
                     } else {
-                        button = <button className="btn btn-primary" onClick={() => enable(p)}><i className="fas fa-eye"></i> Habilitar</button>;
+                        button = <button className="btn btn-primary" onClick={() => enable(c)}><i className="fas fa-eye"></i> Habilitar</button>;
                     }
                     
                     return (<tr>
-                        <td>{p.name}</td><td className="text-right">{p.rol}</td>
+                        <td>{c.name}</td>
                         <td className="d-flex justify-content-between">
                             {button}
-                            <button className="btn btn-warning" onClick={() => edit(p)}><i className="fas fa-pencil"></i> Editar</button>
+                            <button className="btn btn-warning" onClick={() => edit(c)}><i className="fas fa-pencil"></i> Editar</button>
                         </td>
                     </tr>); 
                 });
@@ -50,7 +51,6 @@ const ClientsAdmin = () => {
                 method: 'PUT', headers: { 'Content-Type': 'application/json'}, body: JSON.stringify({
                     operatorId: config.operatorId,
                     name: client.name,
-                    rol: client.rol,
                     active: false
                 })
             };
@@ -68,7 +68,6 @@ const ClientsAdmin = () => {
                 method: 'PUT', headers: { 'Content-Type': 'application/json'}, body: JSON.stringify({
                     operatorId: config.operatorId,
                     name: client.name,
-                    rol: client.rol,
                     active: true
                 })
             };
@@ -85,6 +84,7 @@ const ClientsAdmin = () => {
         sessionStorage.setItem("client", clientData);
         navigate("/clients/edit");
     }
+    
     return (
         <div>
                 <Topbar />
@@ -94,12 +94,12 @@ const ClientsAdmin = () => {
                     <div className="container-fluid">
                         <div className="row mb-2">
                             <div className="col-sm-6">
-                                <h1>Panel de Clientes</h1>
+                                <h1>Panel de Ventas</h1>
                             </div>
                             <div className="col-sm-6">
                                 <ol className="breadcrumb float-sm-right">
                                     <li className="breadcrumb-item"><a href="/">Cloud Sales</a></li>
-                                    <li className="breadcrumb-item active">Clientes</li>
+                                    <li className="breadcrumb-item active">Productos</li>
                                 </ol>
                             </div>
                         </div>
@@ -115,9 +115,7 @@ const ClientsAdmin = () => {
                                     <table className="table">
                                         <thead>
                                             <tr>
-                                                <th>Cliente</th>
-                                                <th>Rol</th>
-                                                <th>Acciones</th>
+                                                <th>Nombre</th>
                                             </tr>
                                         </thead>
                                         <tbody>

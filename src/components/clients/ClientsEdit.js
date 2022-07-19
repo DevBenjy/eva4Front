@@ -1,14 +1,97 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import Sidebar from "../Sidebar";
 import Topbar from "../Topbar";
-import { Link, useNavigate } from "react-router-dom";
-import config from '../../helpers/config.json';
+import { useNavigate } from "react-router-dom";
+import config from './../../helpers/config.json';
 
 const ClientsEdit = () => {
-    return(
-        <div>
+    let navigate = useNavigate();
+    let clientData = JSON.parse(sessionStorage.getItem("product")); 
+    const cancel = () => {
+        var {clientName} = document.forms[0]; 
+        var hasChanges = clientName.value.length > 0;
+        if(hasChanges){
+            if(window.confirm("Existen cambios sin guardar. ¿Seguro de querer cancelar?")){
+                navigate("/clients");
+            }
+        } else {
+            navigate("/clients")
+        }
+    }
+
+    const save = async (event) => {
+        event.preventDefault();
+        var {clientName} = document.forms[0];
+        var errors = "";
+       
+        errors += parseInt(clientName.value) > 0 ? "Debe agregar un nombre.\n": "";
+        if(errors.length > 0){
+            window.alert("Corrija los siguientes errores:\n"+errors);
+        } else {
+            const requestOptions = {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json'},
+                body: JSON.stringify({ "operatorId": config.operatorId, "name": clientName.value, "active": clientData.active})
+              }
+              fetch(config.apiURL+"clients/"+clientData.id, requestOptions).then((response) => {
+                switch(response.status){
+                  case 400:
+                    console.log("consulta mal formada");
+                    break;
+                  case 403:
+                    console.log("acceso prohibido");
+                    break;
+                  default:
+                    //
+                }
+                return response.json();
+              }).then((result) => {
+                  window.alert("Actualizacion existosa");
+                  navigate("/clients");
+              })
+        }
+    }
+    return (<div>
             <Topbar />
             <Sidebar />
+            <div className="content-wrapper">
+                <section className="content-header">
+                    <div className="container-fluid">
+                        <div className="row mb-2">
+                            <div className="col-sm-6">
+                                <h1>Incorporación de Producto</h1>
+                            </div>
+                            <div className="col-sm-6">
+                                <ol className="breadcrumb float-sm-right">
+                                    <li className="breadcrumb-item"><a href="/">Cloud Sales</a></li>
+                                    <li className="breadcrumb-item"><a href="/clients">Productos</a></li>
+                                    <li className="breadcrumb-item active">Agregar</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section className="content">
+                    <div className="card">
+                        <div className="card-body">
+                            <form onSubmit={save}>
+                            <div className="row">
+                                <div className="col-12">
+                                    <div className="form-group">
+                                        <label htmlFor="productName" className="control-label">Nombre</label>
+                                        <input type="text" name="productName" id="productName" className="form-control" defaultValue={clientData.name} required />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="d-flex justify-content-between">
+                                <button type="button" onClick={cancel} className="btn btn-secondary"><i className="fas fa-times"></i> Cancelar</button>
+                                <button type="submit" className="btn btn-primary"><i className="fas fa-save"></i> Guardar</button>
+                            </div>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+            </div>
         </div>
     )
 }
